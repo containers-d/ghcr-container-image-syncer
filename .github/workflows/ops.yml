@@ -20,15 +20,13 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: pull busybox latest
-        run: docker pull docker.io/library/busybox:latest
+        run: sudo ctr image pull --all-platforms docker.io/library/busybox:latest
 
       - name: push image
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           VERSION=latest
 
-          docker tag docker.io/library/busybox:latest $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
+          sudo ctr image tag docker.io/library/busybox:latest $IMAGE_ID:$VERSION
+          sudo ctr image push -u ${{ github.repository_owner }}:${{ secrets.ACTION_ONLY_PACKAGE_TOKEN }} $IMAGE_ID:$VERSION

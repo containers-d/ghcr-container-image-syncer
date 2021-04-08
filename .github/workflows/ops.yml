@@ -1,0 +1,32 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+
+env:
+  IMAGE_NAME: busybox
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: pull busybox latest
+        run: docker pull docker.io/library/busybox:latest
+
+      - name: push image
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          VERSION=latest
+
+          docker tag docker.io/library/busybox:latest $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
